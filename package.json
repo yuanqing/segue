@@ -1,7 +1,7 @@
 {
   "name": "segue",
   "version": "0.0.1",
-  "description": "Control flow via currying.",
+  "description": "Enqueue functions, and call them sequentially.",
   "author": "Lim Yuan Qing",
   "license": "MIT",
   "repository": {
@@ -16,18 +16,19 @@
   },
   "scripts": {
     "cover": "node_modules/.bin/istanbul cover node_modules/.bin/jasmine-node ./spec -x **/spec/**",
-    "lint": "node_modules/.bin/jshint --verbose --reporter node_modules/jshint-stylish/stylish.js index.js",
+    "lint": "node_modules/.bin/jshint --verbose --reporter node_modules/jshint-stylish/stylish.js *.js",
     "lint-test": "node_modules/.bin/jshint --verbose --reporter node_modules/jshint-stylish/stylish.js ./spec/*.js",
     "test": "node_modules/.bin/jasmine-node spec --verbose"
   },
   "keywords": [
+    "arguments",
     "async",
     "asynchronous",
     "callback",
-    "curry",
-    "currying",
     "flow",
     "queue",
+    "sequential",
+    "serial",
     "series",
     "waterfall"
   ]
