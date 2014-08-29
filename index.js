@@ -20,10 +20,7 @@ var segue = function(cb) {
 
     if (queue.length) { // call the next function in the `queue`
       arr = queue.shift();
-      if (arr[1].length) {
-        args = arr[1];
-      }
-      nextArgs = [];
+      args = args.concat(arr[1]);
       arr[0].apply(next, args);
     } else {
       nextArgs = args; // save the arguments passed to the `this` callback
@@ -39,13 +36,16 @@ var segue = function(cb) {
 
     if (!queue.length && !running) {
       running = true;
-      fn.apply(next, args.length ? args : nextArgs);
+      fn.apply(next, nextArgs.concat(args));
+      nextArgs = [];
     } else {
       queue.push([fn, args]);
     }
     return enqueue;
 
   };
+
+  enqueue.next = next;
 
   return enqueue;
 

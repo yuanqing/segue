@@ -37,9 +37,9 @@ describe('segue(cb)(fn [, arg, ...])', function() {
 
       it('when `next` had been enqueued after `prev` had already returned', function() {
 
-        var s = segue(cb)(prev, 1);
+        var queue = segue(cb)(prev, 1);
         setTimeout(function() {
-          s(next);
+          queue(next);
         }, 100); // `prev` returned after 10ms
 
       });
@@ -51,15 +51,17 @@ describe('segue(cb)(fn [, arg, ...])', function() {
       var cb = jasmine.createSpy();
       var prev = function(foo) {
         var that = this;
+        expect(arguments.length).toBe(1);
         expect(foo).toBe(1);
         setTimeout(function() {
           that(null, 'from prev');
         }, 10);
       };
-      var next = function(foo) {
+      var next = function(foo, bar) {
         var that = this;
-        expect(foo).not.toBe('from prev');
-        expect(foo).toBe(2);
+        expect(arguments.length).toBe(2);
+        expect(foo).toBe('from prev');
+        expect(bar).toBe(2);
         setTimeout(function() {
           that(null);
           expect(cb).not.toHaveBeenCalled();
