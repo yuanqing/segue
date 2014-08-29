@@ -51,7 +51,7 @@ var bar = function(a, b) {
 &hellip;which we then add to our `queue` like so:
 
 ```js
-queue(foo, 'verse')(bar, 'chorus');
+queue(foo, 'Hello')(bar, 'World!');
 ```
 
 Because the `queue` is initially empty, `foo` is called with the `'Hello'` argument. After 100ms, `foo` finishes execution, and `bar` starts execution.
