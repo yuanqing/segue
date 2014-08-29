@@ -14,7 +14,7 @@ There is [a runnable example](https://github.com/yuanqing/segue/blob/master/exam
 
 ```bash
 $ git clone https://github.com/yuanqing/segue && cd segue
-$ node segue/example.js
+$ node example.js
 ```
 
 There are also [tests](https://github.com/yuanqing/segue/blob/master/spec/segue.spec.js).
