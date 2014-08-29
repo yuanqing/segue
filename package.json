@@ -16,7 +16,8 @@
   },
   "scripts": {
     "cover": "node_modules/.bin/istanbul cover node_modules/.bin/jasmine-node ./spec -x **/spec/**",
-    "lint": "node_modules/.bin/jshint --verbose --reporter node_modules/jshint-stylish/stylish.js *.js",
+    "lint": "npm run lint-lib && npm run lint-test",
+    "lint-lib": "node_modules/.bin/jshint --verbose --reporter node_modules/jshint-stylish/stylish.js *.js",
     "lint-test": "node_modules/.bin/jshint --verbose --reporter node_modules/jshint-stylish/stylish.js ./spec/*.js",
     "test": "node_modules/.bin/jasmine-node spec --verbose"
   },
