@@ -45,8 +45,6 @@ var segue = function(cb) {
 
   };
 
-  enqueue.next = next;
-
   return enqueue;
 
 };
