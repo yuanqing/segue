@@ -1,7 +1,7 @@
 {
   "name": "segue",
-  "version": "0.0.2",
-  "description": "Enqueue functions, and call them sequentially.",
+  "version": "0.0.3",
+  "description": "Enqueue functions, and call them in series.",
   "author": "Lim Yuan Qing",
   "license": "MIT",
   "repository": {
@@ -22,15 +22,19 @@
     "test": "node_modules/.bin/jasmine-node spec --verbose"
   },
   "keywords": [
-    "arguments",
     "async",
     "asynchronous",
     "callback",
+    "control",
+    "curried",
+    "currying",
     "flow",
     "queue",
     "sequential",
     "serial",
     "series",
+    "sync",
+    "synchronous",
     "waterfall"
   ]
 }

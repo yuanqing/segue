@@ -3,7 +3,7 @@
 
 var segue = require('..');
 
-describe('segue(cb)(fn [, arg, ...])', function() {
+describe('segue(cb)(fn [, arg1, ...])...', function() {
 
   describe('calls each `fn` sequentially', function() {
 
