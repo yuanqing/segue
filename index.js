@@ -4,6 +4,8 @@ var aps = Array.prototype.slice;
 
 var segue = function(cb) {
 
+  cb = cb || function() {}; // no op
+
   var running = false;
   var queue = [];
   var nextArgs = [];
