@@ -13,7 +13,7 @@ var uglify = require('gulp-uglify');
 var paths = {
   coverage: 'coverage/',
   dist: 'dist/',
-  src: 'index.js',
+  src: ['index.js'],
   test: ['spec/**/*.spec.js']
 };
 
