@@ -5,12 +5,12 @@
 ## Features
 
 - Pass arguments from one function in the queue to the next
-- Repeat the sequence of function calls indefinitely
-- Pause and resume the calling of functions in the queue
+- Repeat the entire sequence of function calls indefinitely
+- Pause or resume the calling of functions in the queue
 - Small as it gets; 1.2 KB [minified](https://github.com/yuanqing/segue/blob/master/dist/segue.min.js), or 0.6 KB minified and gzipped
 - Error handling
 
-Segue is particularly useful for when there are an indeterminate number of asynchronous functions that you want to call in series.
+Segue is particularly useful for when you have an indeterminate number of asynchronous functions that you want to call in series.
 
 ## Quick start
 
@@ -102,13 +102,24 @@ button.addEventListener('click', function() {
 });
 ```
 
-Note that if `repeat` is false and all the functions in `queue` have already been called, invoking `queue` will have no effect.
-
 ## API
 
-### segue([cb, repeat])(fn1 [, arg1, &hellip;])&hellip;()
-
 See [Usage](#usage).
+
+### segue([cb, repeat])
+
+Initialises the function queue.
+
+- `cb` &mdash; Error handler that takes `err` as the first argument.
+- `repeat` &mdash; Whether to repeat the entire sequence of function calls indefinitely.
+
+### segue(fn [, arg1, arg2, &hellip;])
+
+Adds `fn` to the function queue. When called, `fn` will be passed the specified arguments.
+
+### segue()
+
+Pauses or resumes the calling of functions in the function queue. (Note that if `repeat` is false, and all the functions in the queue have already run, this will have no effect.)
 
 ## Installation
 
