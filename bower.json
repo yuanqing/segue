@@ -1,0 +1,11 @@
+{
+  "name": "segue",
+  "main": "dist/segue.min.js",
+  "version": "0.2.0",
+  "homepage": "https://github.com/yuanqing/segue",
+  "authors": [
+    "Lim Yuan Qing <hello@yuanqing.sg>"
+  ],
+  "description": "Enqueue functions, and call them in series.",
+  "license": "MIT"
+}
