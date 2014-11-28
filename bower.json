@@ -7,5 +7,10 @@
     "Lim Yuan Qing <hello@yuanqing.sg>"
   ],
   "description": "Enqueue functions, and call them in series.",
-  "license": "MIT"
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "bower_components",
+    "node_modules"
+  ]
 }
