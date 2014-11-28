@@ -1,113 +1,179 @@
-/* globals describe, beforeEach, it, expect, jasmine */
+/* globals describe, beforeEach, afterEach, it, expect, jasmine */
 'use strict';
 
 var segue = require('..');
+var sinon = require('sinon');
 
-describe('segue(cb)(fn [, arg1, ...])...', function() {
+describe('segue([cb, repeat])(fn1 [, arg1, ...])...()', function() {
 
-  describe('calls each `fn` sequentially', function() {
+  var clock;
 
-    describe('with `next` using arguments from the `this` callback of `prev`', function() {
+  beforeEach(function() {
+    clock = sinon.useFakeTimers();
+  });
 
-      var cb, prev, next;
+  afterEach(function() {
+    clock.restore();
+  });
 
-      beforeEach(function() {
+  describe('call each `fn` sequentially', function() {
 
-        cb = jasmine.createSpy();
-        prev = function(foo) {
-          var that = this;
-          expect(foo).toBe(1);
-          setTimeout(function() {
-            that(null, 'from prev');
-          }, 10);
-        };
-        next = function(foo) {
-          expect(foo).toBe('from prev');
-          expect(cb).not.toHaveBeenCalled();
-          this(null);
-        };
+    var prev, next;
 
-      });
+    beforeEach(function() {
 
-      it('when `next` had been enqueued while `prev` was still running', function() {
-
-        segue(cb)(prev, 1)(next);
-
-      });
-
-      it('when `next` had been enqueued after `prev` had already returned', function() {
-
-        var queue = segue(cb)(prev, 1);
+      prev = jasmine.createSpy();
+      prev.and.callFake(function() {
         setTimeout(function() {
-          queue(next);
-        }, 100); // `prev` returned after 10ms
+          this(null, 'foo');
+        }.bind(this), 10);
+      });
 
+      next = jasmine.createSpy();
+      next.and.callFake(function() {
+        this(null);
       });
 
     });
 
-    it('with `next` not using arguments from the `this` callback of `prev`', function(done) {
+    it('with `next` enqueued while `prev` was still running', function() {
 
       var cb = jasmine.createSpy();
-      var prev = function(foo) {
-        var that = this;
-        expect(arguments.length).toBe(1);
-        expect(foo).toBe(1);
-        setTimeout(function() {
-          that(null, 'from prev');
-        }, 10);
-      };
-      var next = function(foo, bar) {
-        var that = this;
-        expect(arguments.length).toBe(2);
-        expect(foo).toBe('from prev');
-        expect(bar).toBe(2);
-        setTimeout(function() {
-          that(null);
-          expect(cb).not.toHaveBeenCalled();
-          done();
-        }, 10);
-      };
-
       segue(cb)(prev, 1)(next, 2);
+
+      // `prev`
+      expect(prev).not.toHaveBeenCalled();
+      clock.tick(0);
+      expect(prev).toHaveBeenCalledWith(1);
+
+      // `next`
+      expect(next).not.toHaveBeenCalled();
+      clock.tick(10); // `prev` finishes at t=10ms
+      expect(next).toHaveBeenCalledWith('foo', 2);
+
+      // `cb`
+      expect(cb).not.toHaveBeenCalled();
+
+    });
+
+    it('with `next` enqueued after `prev` had already finished running', function() {
+
+      var queue = segue()(prev, 1);
+      setTimeout(function() {
+        queue(next, 2);
+      }, 20);
+
+      // `prev`
+      expect(prev).not.toHaveBeenCalled();
+      clock.tick(0);
+      expect(prev).toHaveBeenCalledWith(1);
+
+      // `next`
+      expect(next).not.toHaveBeenCalled();
+      clock.tick(20); // `next` was enqueued at t=20ms
+      expect(next).toHaveBeenCalledWith('foo', 2);
+
+    });
+
+    it('with `repeat` set to `true`', function() {
+
+      segue(true)(prev, 1)(next, 2);
+
+      // `prev`
+      expect(prev.calls.count()).toBe(0);
+      clock.tick(0);
+      expect(prev.calls.count()).toBe(1);
+      expect(prev.calls.mostRecent().args).toEqual([1]);
+
+      // `next`
+      expect(next.calls.count()).toBe(0);
+      clock.tick(10); // first call to `prev` finishes at t=10ms
+      expect(next.calls.count()).toBe(1);
+      expect(next.calls.mostRecent().args).toEqual(['foo', 2]);
+
+      // `prev`
+      expect(prev.calls.count()).toBe(2);
+      expect(prev.calls.mostRecent().args).toEqual([1]);
+
+      // `next`
+      expect(next.calls.count()).toBe(1);
+      clock.tick(10); // second call to `prev` finishes at t=20ms
+      expect(next.calls.count()).toBe(2);
+      expect(next.calls.mostRecent().args).toEqual(['foo', 2]);
 
     });
 
   });
 
-  describe('passes error to `cb` when there was an error', function() {
+  it('pause and resume the calling of functions in the queue', function() {
 
-    it('in an asynchronous function', function(done) {
-
-      var cb = jasmine.createSpy();
-      var next = jasmine.createSpy();
-      var prev = function() {
-        var that = this;
-        setTimeout(function() {
-          that('error');
-          expect(cb).toHaveBeenCalledWith('error');
-          expect(next).not.toHaveBeenCalled();
-          done();
-        }, 10);
-      };
-
-      segue(cb)(prev)(next);
-
+    var fn = jasmine.createSpy();
+    fn.and.callFake(function() {
+      setTimeout(function() {
+        this(null);
+      }.bind(this), 10);
     });
 
-    it('in a synchronous function', function() {
+    var queue = segue(true)(fn);
 
-      var cb = jasmine.createSpy();
-      var next = jasmine.createSpy();
-      var prev = function() {
+    // pause at t=20ms
+    setTimeout(function() {
+      queue();
+    }, 20);
+
+    // resume at t=40ms
+    setTimeout(function() {
+      queue();
+    }, 40);
+
+    // t=0ms
+    expect(fn.calls.count()).toBe(0);
+    clock.tick(0);
+    expect(fn.calls.count()).toBe(1);
+
+    // t=10ms
+    clock.tick(10);
+    expect(fn.calls.count()).toBe(2);
+
+    // t=20ms
+    clock.tick(10);
+    expect(fn.calls.count()).toBe(2);
+
+    // t=30ms
+    clock.tick(10);
+    expect(fn.calls.count()).toBe(2);
+
+    // t=40ms
+    clock.tick(10);
+    expect(fn.calls.count()).toBe(3);
+
+  });
+
+  it('on error, pass it to `cb`, and stop calling functions in the queue', function() {
+
+    var cb = jasmine.createSpy();
+    var prev = jasmine.createSpy();
+    prev.and.callFake(function() {
+      setTimeout(function() {
         this('error');
-        expect(cb).toHaveBeenCalledWith('error');
-        expect(next).not.toHaveBeenCalled();
-      };
-
-      segue(cb)(prev)(next);
-
+      }.bind(this), 10);
     });
+    var next = jasmine.createSpy();
+
+    segue(cb)(prev)(next);
+
+    // `prev`
+    expect(prev).not.toHaveBeenCalled();
+    clock.tick(0);
+    expect(prev).toHaveBeenCalled();
+
+    // `cb`
+    expect(cb).not.toHaveBeenCalled();
+    clock.tick(10); // `prev` finishes at t=10ms
+    expect(cb).toHaveBeenCalledWith('error');
+
+    // `next`
+    expect(next).not.toHaveBeenCalled();
 
   });
 
