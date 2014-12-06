@@ -14,7 +14,7 @@ var paths = {
   coverage: 'coverage/',
   dist: 'dist/',
   src: ['index.js'],
-  test: ['spec/**/*.spec.js']
+  test: ['test/**/*.spec.js']
 };
 
 var defaultTasks = ['clean', 'lint', 'test', 'dist'];

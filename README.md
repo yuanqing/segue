@@ -1,4 +1,4 @@
-# Segue.js [![npm Version](http://img.shields.io/npm/v/segue.svg?style=flat)](https://www.npmjs.org/package/segue) [![Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)](https://github.com/yuanqing/segue) [![Build Status](https://img.shields.io/travis/yuanqing/segue.svg?style=flat)](https://travis-ci.org/yuanqing/segue) [![Coverage Status](https://img.shields.io/coveralls/yuanqing/segue.svg?style=flat)](https://coveralls.io/r/yuanqing/segue)
+# Segue.js [![Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)](https://github.com/yuanqing/segue) [![npm Version](http://img.shields.io/npm/v/segue.svg?style=flat)](https://www.npmjs.org/package/segue) [![Build Status](https://img.shields.io/travis/yuanqing/segue.svg?style=flat)](https://travis-ci.org/yuanqing/segue) [![Coverage Status](https://img.shields.io/coveralls/yuanqing/segue.svg?style=flat)](https://coveralls.io/r/yuanqing/segue)
 
 > Enqueue functions, and call them in series.
 
