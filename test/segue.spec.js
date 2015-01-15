@@ -4,7 +4,7 @@
 var segue = require('..');
 var sinon = require('sinon');
 
-describe('segue([cb, repeat])(fn1 [, arg1, ...])...()', function() {
+describe('segue([cb, opts])(fn1 [, arg1, ...])...()', function() {
 
   var clock;
 
@@ -75,9 +75,9 @@ describe('segue([cb, repeat])(fn1 [, arg1, ...])...()', function() {
 
     });
 
-    it('with `repeat` set to `true`', function() {
+    it('with `opts.repeat` set to `true`', function() {
 
-      segue(true)(prev, 1)(next, 2);
+      segue({ repeat: true })(prev, 1)(next, 2);
 
       // `prev`
       expect(prev.calls.count()).toBe(0);
@@ -114,7 +114,7 @@ describe('segue([cb, repeat])(fn1 [, arg1, ...])...()', function() {
       }.bind(this), 10);
     });
 
-    var queue = segue(true)(fn);
+    var queue = segue({ repeat: true })(fn);
 
     // pause at t=20ms
     setTimeout(function() {

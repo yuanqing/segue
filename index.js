@@ -2,15 +2,16 @@
 
 var aps = Array.prototype.slice;
 
-var segue = function(cb, repeat) {
+var noop = function() {};
 
-  // both `repeat` and `cb` are optional
-  if (typeof cb === 'boolean') {
-    repeat = cb;
+var segue = function(cb, opts) {
+
+  if (typeof cb !== 'function') {
+    opts = cb;
+    cb = noop;
   }
-  cb = cb || function() {}; // default to no op
-  repeat = repeat === true || false; // default to `false`
 
+  var repeat = opts && opts.repeat === true || false;
   var i = -1;
   var queue = [];
   var running = false;
@@ -59,4 +60,4 @@ var segue = function(cb, repeat) {
 
 };
 
-module.exports = exports = segue;
+module.exports = segue;
