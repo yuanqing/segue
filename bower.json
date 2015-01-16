@@ -1,7 +1,7 @@
 {
   "name": "segue",
   "main": "dist/segue.min.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "https://github.com/yuanqing/segue",
   "authors": [
     "Lim Yuan Qing <hello@yuanqing.sg>"
