@@ -1,32 +1,30 @@
-# Segue.js [![Experimental](http://img.shields.io/badge/stability-experimental-red.svg?style=flat)](https://github.com/yuanqing/segue) [![npm Version](http://img.shields.io/npm/v/segue.svg?style=flat)](https://www.npmjs.org/package/segue) [![Build Status](https://img.shields.io/travis/yuanqing/segue.svg?style=flat)](https://travis-ci.org/yuanqing/segue) [![Coverage Status](https://img.shields.io/coveralls/yuanqing/segue.svg?style=flat)](https://coveralls.io/r/yuanqing/segue)
+# Segue.js [![npm Version](http://img.shields.io/npm/v/segue.svg?style=flat)](https://www.npmjs.org/package/segue) [![Build Status](https://img.shields.io/travis/yuanqing/segue.svg?style=flat)](https://travis-ci.org/yuanqing/segue) [![Coverage Status](https://img.shields.io/coveralls/yuanqing/segue.svg?style=flat)](https://coveralls.io/r/yuanqing/segue)
 
 > Enqueue functions, and call them in series.
 
 ## Features
 
-- Pass arguments from one function in the queue to the next
 - Repeat the entire sequence of function calls indefinitely
-- Pause or resume the calling of functions in the queue
-- Small as it gets; 1.2 KB [minified](https://github.com/yuanqing/segue/blob/master/dist/segue.min.js), or 0.6 KB minified and gzipped
+- Small as it gets; 0.48 KB [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 0.32 KB minified and gzipped
 - Error handling
 
 Segue is particularly useful for when you have an indeterminate number of asynchronous functions that you want to call in series.
 
 ## Quick start
 
-There is [a runnable example](https://github.com/yuanqing/segue/blob/master/example.js) you can play with:
+There is [a runnable example](https://github.com/yuanqing/segue/blob/master/example/index.js) you can play with:
 
 ```bash
 $ git clone https://github.com/yuanqing/segue
-$ cd segue
-$ node example.js
+$ cd segue/example
+$ node index.js
 ```
 
-There are also [tests](https://github.com/yuanqing/segue/blob/master/spec/segue.spec.js).
+There are also [tests](https://github.com/yuanqing/segue/blob/master/test/index.js).
 
 ## Usage
 
-We first initialise a `queue` of functions by calling `segue`, passing in an error handler `cb`:
+We first initialise a `queue` of functions by calling `segue`, passing in an error callback `cb`:
 
 ```js
 var cb = function(err) {
@@ -38,98 +36,71 @@ var cb = function(err) {
 var queue = segue(cb);
 ```
 
-Suppose that we have two functions, `foo` and `bar`&hellip;
+Suppose that we have two functions, `x` and `y`&hellip;
 
 ```js
-var foo = function(a) {
-  console.log(a); //=> 'Hello'
+var x = function(done, a) {
+  console.log(a); //=> 1
   setTimeout(function() {
-    this(null, a);
-  }.bind(this), 100);
+    done();
+  }, 100);
 };
 
-var bar = function(a, b) {
-  console.log(a + ', ' + b); //=> 'Hello, World!'
-  this(null, a, b);
+var y = function(done, a, b) {
+  console.log(a, b); //=> 2, 3
+  done();
 };
 ```
 
-&hellip;which we then add to `queue`:
+&hellip;which we then add into the `queue`:
 
 ```js
-queue(foo, 'Hello')(bar, 'World!');
+queue(x, 1)(y, 2, 3);
 ```
 
-Because `queue` is initially empty, `foo` is called immediately with the `'Hello'` argument. After 100 milliseconds, `foo` finishes execution, and `bar` is called.
+Because `queue` is initially empty, `x` is called immediately with the argument `1`. After 100 milliseconds, `x` finishes execution, and `y` is called with the single argument `2` and `3`.
 
-Each function in `queue` must call `this` to signal that it has finished execution. As is convention, the `this` callback takes an `err` as its first argument.
+Every function in the `queue` takes a `done` callback as the first argument, and must call `done` to signal that it has finished execution. As is convention, `done` callback takes an `err` as its first argument. If `done` is called with a truthy `err`, the error callback (ie. `cb`) is called with the `err`, and no more functions in the queue are run.
 
-- If `err` is truthy, the error callback (ie. `cb`) is called with the `err`, and no more functions in the queue are run.
+### Repeat
 
-- If `err` is falsy&hellip;
-
-  - &hellip;and `queue` is non-empty, the next function in the `queue` is called. The next function receives all the arguments except `err` that had been passed to the `this` callback.
-
-    So, in our toy example, `bar` will be called with two arguments:
-
-    1. The value for `a` was from the `this` callback in `foo`.
-    2. The value for `b` was from the initial call to add `bar` to `queue`.
-
-  - &hellip;and `queue` is empty, all the arguments except `err` that had been passed to the `this` callback are saved. These arguments will be passed to the next function that is added to the `queue`.
-
-    Notice that the `this` callback in `bar` was called with `a` and `b`; the next function that is added into `queue` will receive both these arguments.
-
----
-
-To repeat the entire sequence of function calls indefinitely, simply pass in `true` as the second parameter in our initial call to `segue`:
+To repeat the entire sequence of function calls indefinitely, simply pass in an `opts` with `opts.repeat` set to `true`:
 
 ```js
-// initialise the `queue`
-var queue = segue(cb, true);
-
-// add functions to the `queue`
-queue(foo, 'Hello')(bar, 'World!');
-```
-
----
-
-To pause or resume the calling of functions on the fly (say, in response to some user interaction), invoke `queue` without arguments:
-
-```js
-// pause or resume the sequence on clicking `button`
-button.addEventListener('click', function() {
-  queue();
-});
+var queue = segue(cb, { repeat: true });
 ```
 
 ## API
 
 See [Usage](#usage).
 
-### segue([cb, repeat])
+### segue(cb [, opts])
 
 Initialises the function queue.
 
-- `cb` &mdash; Error handler that takes `err` as the first argument.
-- `repeat` &mdash; Whether to repeat the entire sequence of function calls indefinitely.
+- `cb` is the error handler function that takes `err` as the first argument.
+- Set `opts.repeat` to `true` to repeat the entire sequence of function calls indefinitely.
 
 ### segue(fn [, arg1, arg2, &hellip;])
 
-Adds `fn` to the function queue. When called, `fn` will be passed the specified arguments.
+Adds `fn` into the function queue. `fn` will be called with a `done` callback, followed by the arguments specified here (`arg1`, `arg2`, and so on). `fn` must call `done` to signal that it has finished execution. If `done` is called with a truthy `err`, the error callback (ie. `cb`) is called with the `err`, and no more functions in the queue are run.
 
-### segue()
-
-Pauses or resumes the calling of functions in the function queue. (Note that if `repeat` is false, and all the functions in the queue have already run, this will have no effect.)
 
 ## Installation
 
-Install via [npm](https://www.npmjs.org/package/segue):
+Install via [npm](https://npmjs.com/):
 
 ```bash
 $ npm i --save segue
 ```
 
-To use Segue in the browser, include [the minified script](https://github.com/yuanqing/segue/blob/master/dist/segue.min.js) in your HTML:
+Install via [bower](http://bower.io/):
+
+```bash
+$ bower i --save yuanqing/segue
+```
+
+To use Segue in the browser, include [the minified script](https://github.com/yuanqing/segue/blob/master/segue.min.js) in your HTML:
 
 ```html
 <body>
@@ -143,6 +114,12 @@ To use Segue in the browser, include [the minified script](https://github.com/yu
 
 ## Changelog
 
+- 1.0.0
+  - Major rewrite/clean up, with a significant drop in file size
+  - Write tests using [tape](https://github.com/substack/tape)
+  - Remove ability to pass arguments between functions
+  - Remove pause/resume functionality
+  - Drop [Gulp](http://gulpjs.com/)
 - 0.2.0
   - Add pause/resume functionality
   - Add repeat functionality
