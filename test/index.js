@@ -148,9 +148,9 @@ test('segue([cb , opts])(fn1 [, arg1, ...])(fn2 [, arg1, ...])', function(t) {
         t.end();
       }
     };
-    var s = segue(cb)(x, 1)(y, 2, 3);
+    var queue = segue(cb)(x, 1)(y, 2, 3);
     setTimeout(function() {
-      s(y, 2, 3);
+      queue(y, 2, 3);
     }, 200);
   });
 
@@ -176,9 +176,9 @@ test('segue([cb , opts])(fn1 [, arg1, ...])(fn2 [, arg1, ...])', function(t) {
       ]);
       t.end();
     };
-    var s = segue(cb)(x, 1);
+    var queue = segue(cb)(x, 1);
     setTimeout(function() {
-      s(y, 2, 3);
+      queue(y, 2, 3);
     }, 100);
   });
 
@@ -212,9 +212,9 @@ test('segue([cb , opts])(fn1 [, arg1, ...])(fn2 [, arg1, ...])', function(t) {
         t.end();
       }
     };
-    var s = segue(cb)(x, 1);
+    var queue = segue(cb)(x, 1);
     setTimeout(function() {
-      s(y, 2, 3);
+      queue(y, 2, 3);
     }, 200);
   });
 
