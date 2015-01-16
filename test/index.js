@@ -3,17 +3,7 @@
 var test = require('tape');
 var segue = require('../');
 
-test('segue(cb [, opts])(fn1 [, arg1, ...])(fn2 [, arg1, ...])', function(t) {
-
-  t.test('throws if no `cb`, or if `cb` is not a function', function(t) {
-    t.throws(function() {
-      segue();
-    });
-    t.throws(function() {
-      segue('error');
-    });
-    t.end();
-  });
+test('segue([cb , opts])(fn1 [, arg1, ...])(fn2 [, arg1, ...])', function(t) {
 
   t.test('calls functions in the queue in series', function(t) {
     var args = [];
@@ -48,6 +38,30 @@ test('segue(cb [, opts])(fn1 [, arg1, ...])(fn2 [, arg1, ...])', function(t) {
       t.end();
     };
     segue(cb)(x, 1)(y, 2, 3)(z);
+  });
+
+  t.test('initialised without arguments', function(t) {
+    t.plan(2);
+    var x = function(done, a) {
+      t.equals(arguments.length, 2);
+      t.equals(a, 1);
+      setTimeout(function() {
+        done();
+      }, 100);
+    };
+    segue()(x, 1);
+  });
+
+  t.test('initialised with `opts` only', function(t) {
+    t.plan(2);
+    var x = function(done, a) {
+      t.equals(arguments.length, 2);
+      t.equals(a, 1);
+      setTimeout(function() {
+        done();
+      }, 100);
+    };
+    segue({ repeat: false })(x, 1);
   });
 
   t.test('repeat if `opts.repeat` is `true`', function(t) {

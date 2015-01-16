@@ -4,8 +4,10 @@ var slice = [].slice;
 
 var segue = function(cb, opts) {
 
+  // both `cb` and `opts` are optional
   if (typeof cb !== 'function') {
-    throw new Error('cb must be a function');
+    opts = cb;
+    cb = function() {};
   }
 
   // only repeat if `opts.repeat` is `true`
