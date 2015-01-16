@@ -1,6 +1,6 @@
 {
   "name": "segue",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "Enqueue functions, and call them in series.",
   "author": "Lim Yuan Qing",
   "license": "MIT",
