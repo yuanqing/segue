@@ -5,7 +5,7 @@
 ## Features
 
 - Repeat the entire sequence of function calls indefinitely
-- Small as it gets; 475 bytes [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 317 bytes minified and gzipped
+- Small as it gets; 453 bytes [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or ~300 bytes minified and gzipped
 - Error handling
 
 Segue is particularly useful for when you have an indeterminate number of asynchronous functions that you want to call in series.
