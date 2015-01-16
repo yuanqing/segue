@@ -5,7 +5,7 @@
 ## Features
 
 - Repeat the entire sequence of function calls indefinitely
-- Small as it gets; 0.48 KB [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 0.32 KB minified and gzipped
+- Small as it gets; 475 bytes [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 317 bytes minified and gzipped
 - Error handling
 
 Segue is particularly useful for when you have an indeterminate number of asynchronous functions that you want to call in series.
@@ -83,8 +83,9 @@ Initialises the function queue.
 
 ### segue(fn [, arg1, arg2, &hellip;])
 
-Adds `fn` into the function queue. `fn` will be called with a `done` callback, followed by the arguments specified here (`arg1`, `arg2`, and so on). `fn` must call `done` to signal that it has finished execution. If `done` is called with a truthy `err`, the error callback (ie. `cb`) is called with the `err`, and no more functions in the queue are run.
+Adds `fn` into the function queue. The `fn` will be called with a `done` callback, followed by the arguments specified here (`arg1`, `arg2`, and so on).
 
+`fn` must call `done` to signal that it has finished execution. If `done` is called with a truthy `err`, the error callback (ie. `cb`) will be called once with the `err`, and no more functions in the queue are run.
 
 ## Installation
 
@@ -105,7 +106,7 @@ To use Segue in the browser, include [the minified script](https://github.com/yu
 ```html
 <body>
   <!-- ... -->
-  <script src="path/to/dist/segue.min.js"></script>
+  <script src="path/to/segue.min.js"></script>
   <script>
     // segue available here
   </script>
@@ -119,12 +120,12 @@ To use Segue in the browser, include [the minified script](https://github.com/yu
   - Write tests using [tape](https://github.com/substack/tape)
   - Remove ability to pass arguments between functions
   - Remove pause/resume functionality
-  - Drop [Gulp](http://gulpjs.com/)
+  - Drop Gulp
 - 0.2.0
   - Add pause/resume functionality
   - Add repeat functionality
   - Add a Browserified version of the module
-  - Use Gulp as build system
+  - Use [Gulp](http://gulpjs.com/) as build system
 - 0.1.0
   - Initial release
 
