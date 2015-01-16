@@ -74,12 +74,12 @@ var queue = segue(cb, { repeat: true });
 
 See [Usage](#usage).
 
-### segue(cb [, opts])
+### segue([cb , opts])
 
 Initialises the function queue.
 
-- `cb` is the error handler function that takes `err` as the first argument.
-- Set `opts.repeat` to `true` to repeat the entire sequence of function calls indefinitely.
+- `cb` is the error callback that takes `err` as the first argument.
+- Set `opts.repeat` to `true` to repeat the sequence of function calls indefinitely.
 
 ### segue(fn [, arg1, arg2, &hellip;])
 
