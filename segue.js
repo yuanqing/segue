@@ -1,8 +1,15 @@
-'use strict';
+(function(fn) {
+  /* istanbul ignore if  */
+  if (typeof module === 'undefined') {
+    this.segue = fn;
+  } else {
+    module.exports = fn;
+  }
+})(function(cb, opts) {
 
-var slice = [].slice;
+  'use strict';
 
-var segue = function(cb, opts) {
+  var slice = [].slice;
 
   // both `cb` and `opts` are optional
   if (typeof cb !== 'function') {
@@ -41,7 +48,7 @@ var segue = function(cb, opts) {
 
   };
 
-  return function enqueue(fn) {
+  return function segue(fn) {
 
     // an error has already occurred; call the `cb` with the `prevErr`
     if (prevErr) {
@@ -61,10 +68,8 @@ var segue = function(cb, opts) {
       }, 0);
     }
 
-    return enqueue;
+    return segue;
 
   };
 
-};
-
-module.exports = segue;
+});
