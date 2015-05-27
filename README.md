@@ -4,13 +4,11 @@
 
 ## Features
 
-- Enqueue functions to be called in series
+- Enqueue asynchronous functions to be called in series
 - Pause or resume the calling of functions in the queue
-- Option to repeat the entire sequence of function calls indefinitely
+- Optionally repeat the entire sequence of function calls indefinitely
 - Small as it gets; 0.63 KB [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 0.38 KB minified and gzipped
 - Error handling
-
-This module is particularly useful for when we have an indeterminate number of asynchronous functions that we want to call in series.
 
 ## Quick start
 
@@ -40,7 +38,7 @@ var done = function(err) {
 var queue = segue(done);
 ```
 
-`done` is called when all the functions in queue have run, or if an error had occurred in one of the function calls in the sequence.
+`done` is called when all the functions in queue have run, or if an error had occurred in one of the functions.
 
 Suppose that we have two functions, `x` and `y`&hellip;
 
@@ -71,15 +69,15 @@ We then kick off the sequence of function calls by calling `run()`:
 queue.run();
 ```
 
-`x` will be called with the argument `1`. After 100 milliseconds, `x` finishes execution, and `y` is called with the single argument `2` and `3`.
+`x` will be called with the argument `1`. After 100 milliseconds, `x` finishes execution, and `y` is called with the arguments `2` and `3`.
 
-Note that every function takes a `cb` callback as the first argument, and must call `cb` to signal that it has finished execution. As is convention, `cb` takes an `err` as its first argument. If `cb` is called with a truthy `err`, the `done` callback is called with the `err`, and no more functions in the `queue` are run.
+Note that every function added into the `queue` takes a `cb` callback as the first argument. Each function must call `cb` to signal that it has finished execution. As is convention, `cb` takes an `err` as its first argument. If `err` is truthy, the `done` callback is called with said `err`, and no more functions in the `queue` are run.
 
 ### Pause, resume
 
-We can also pause or resume the calling of functions on-the-fly.
+We can pause or resume the calling of functions in the queue on-the-fly.
 
-To pause the calling of functions (say, when a button is clicked), call `pause()`:
+To pause the calling of functions (eg. when a button is clicked), call `pause()`:
 
 ```js
 button.addEventListener('click', function() {
@@ -95,11 +93,11 @@ queue.run();
 console.log(queue.isRunning()); //=> true
 ```
 
-Here, we&rsquo;ve also used the `isRunning()` method, which tells us whether a function in the queue is currently running.
+See here that we&rsquo;ve also used the `isRunning()` method, which tells us whether a function in the queue is currently running.
 
 ### Repeat
 
-Finally, we note that it is possible to repeat the entire sequence of function calls indefinitely. Simply pass in `opts` with `opts.repeat` set to `true` when initialising the queue:
+Finally, note that it is possible to repeat the entire sequence of function calls indefinitely. Simply pass in `opts` with `opts.repeat` set to `true` when initialising the queue:
 
 ```js
 var queue = segue(done, { repeat: true });
@@ -117,18 +115,18 @@ See [Usage](#usage).
 
 Initialises the function `queue`.
 
-- The `done` callback is called when all the functions in `queue` have run, or if an error had occurred in one of the function calls. Its signature is `(err)`.
+- The `done` callback is called when all the functions in `queue` have run, or if an error had occurred in one of the function calls. The signature of `done` is `(err)`.
 - Set `opts.repeat` to `true` to repeat the sequence of function calls indefinitely.
 
 ### queue.push(fn [, arg1, arg2, &hellip;])
 
-Adds a function `fn` into the `queue`, and returns the `queue`. The `fn` will be called with a `done` callback, followed by the arguments specified here. In other words, its signature is `(cb, [, arg1, arg2, ...])`.
+Adds a function `fn` into the `queue`, and returns the `queue`. The `fn` will be called with a `cb` callback, followed by the arguments specified here. In other words, the signature `fn` is `(cb, [, arg1, arg2, ...])`.
 
-`fn` must call `cb` to signal that it has finished execution. If `cb` is called with a truthy `err`, the `done` callback is called with the `err`, and no more functions in the `queue` are run.
+`fn` must call `cb` to signal that it has finished execution. If `err` is truthy, the `done` callback is called with said `err`, and no more functions in the `queue` are run.
 
 ### queue.run()
 
-Starts the sequence of function calls, and returns the `queue`.
+Starts (or resumes) the sequence of function calls, and returns the `queue`.
 
 ### queue.pause()
 
