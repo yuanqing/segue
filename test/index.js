@@ -4,7 +4,7 @@ var test = require('tape');
 var segue = require('..');
 
 test('calls functions in the queue in series', function(t) {
-  t.plan(5);
+  t.plan(6);
   var args = [];
   var x = function(cb, a) {
     t.equals(arguments.length, 2);
@@ -29,16 +29,17 @@ test('calls functions in the queue in series', function(t) {
   };
   var cb = function(err) {
     t.false(err);
+    t.false(queue.isRunning());
     t.looseEquals(args, [
       [1],
       [2, 3],
       []
     ]);
   };
-  segue(cb).push(x, 1)
-           .push(y, 2, 3)
-           .push(z)
-           .run();
+  var queue = segue(cb).push(x, 1)
+                       .push(y, 2, 3)
+                       .push(z)
+                       .run();
 });
 
 test('initialised without arguments', function(t) {
@@ -115,29 +116,6 @@ test('repeat if `opts.repeat` is `true`', function(t) {
 });
 
 test('on error, calls `cb` with the `err`', function(t) {
-  t.plan(2);
-  var args = [];
-  var x = function(cb, a) {
-    args.push([a]);
-    setTimeout(function() {
-      cb('error');
-    }, 100);
-  };
-  var y = function() {
-    t.fail(); // never called
-  };
-  var cb = function(err) {
-    t.equals(err, 'error');
-    t.looseEquals(args, [
-      [1]
-    ]);
-  };
-  segue(cb).push(x, 1)
-           .push(y, 2, 3)
-           .run();
-});
-
-test('once an error has occurred, no more functions can be enqueued', function(t) {
   t.plan(3);
   var args = [];
   var x = function(cb, a) {
@@ -151,6 +129,31 @@ test('once an error has occurred, no more functions can be enqueued', function(t
   };
   var cb = function(err) {
     t.equals(err, 'error');
+    t.false(queue.isRunning());
+    t.looseEquals(args, [
+      [1]
+    ]);
+  };
+  var queue = segue(cb).push(x, 1)
+                       .push(y, 2, 3)
+                       .run();
+});
+
+test('once an error has occurred, no more functions can be enqueued', function(t) {
+  t.plan(4);
+  var args = [];
+  var x = function(cb, a) {
+    args.push([a]);
+    setTimeout(function() {
+      cb('error');
+    }, 100);
+  };
+  var y = function() {
+    t.fail(); // never called
+  };
+  var cb = function(err) {
+    t.equals(err, 'error');
+    t.false(queue.isRunning());
     t.looseEquals(args, [
       [1]
     ]);
@@ -165,7 +168,7 @@ test('once an error has occurred, no more functions can be enqueued', function(t
 });
 
 test('enqueue a function when a function in the queue is still running', function(t) {
-  t.plan(3);
+  t.plan(4);
   var args = [];
   var x = function(cb, a) {
     args.push([a]);
@@ -181,6 +184,7 @@ test('enqueue a function when a function in the queue is still running', functio
   };
   var cb = function(err) {
     t.false(err);
+    t.false(queue.isRunning());
     t.looseEquals(args, [
       [1],
       [2, 3]
@@ -195,7 +199,7 @@ test('enqueue a function when a function in the queue is still running', functio
 });
 
 test('enqueue a function when all functions in the queue have finished running', function(t) {
-  t.plan(4);
+  t.plan(6);
   var args = [];
   var x = function(cb, a) {
     args.push([a]);
@@ -212,6 +216,7 @@ test('enqueue a function when all functions in the queue have finished running',
   var flag = true;
   var cb = function(err) {
     t.false(err);
+    t.false(queue.isRunning());
     if (flag) {
       flag = false;
       t.looseEquals(args, [
@@ -256,7 +261,7 @@ test('pause', function(t) {
 });
 
 test('pause, then run', function(t) {
-  t.plan(4);
+  t.plan(6);
   var args = [];
   var x = function(cb, a) {
     args.push([a]);
@@ -272,6 +277,7 @@ test('pause, then run', function(t) {
   };
   var cb = function(err) {
     t.false(err);
+    t.false(queue.isRunning());
     t.looseEquals(args, [
       [1],
       [2, 3]
@@ -285,44 +291,9 @@ test('pause, then run', function(t) {
     queue.pause();
   }, 50);
   setTimeout(function() {
-    t.pass();
+    t.false(queue.isRunning());
     queue.run();
-    queue.run();
-  }, 100);
-});
-
-test('pause, then run', function(t) {
-  t.plan(4);
-  var args = [];
-  var x = function(cb, a) {
-    args.push([a]);
-    setTimeout(function() {
-      cb();
-    }, 100);
-  };
-  var y = function(cb, a, b) {
-    args.push([a, b]);
-    setTimeout(function() {
-      cb();
-    }, 100);
-  };
-  var cb = function(err) {
-    t.false(err);
-    t.looseEquals(args, [
-      [1],
-      [2, 3]
-    ]);
-  };
-  var queue = segue(cb).push(x, 1)
-                       .push(y, 2, 3)
-                       .run();
-  setTimeout(function() {
-    t.pass();
-    queue.pause();
-  }, 50);
-  setTimeout(function() {
-    t.pass();
-    queue.run();
+    t.true(queue.isRunning());
     queue.run();
   }, 100);
 });

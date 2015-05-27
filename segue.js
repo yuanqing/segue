@@ -2,11 +2,11 @@
 
   'use strict';
 
-  var noop = function() {};
-
   var PAUSED = 0;
   var RUNNING = 1;
   var ERRORED = 2;
+
+  var noop = function() {};
 
   var Segue = function(cb, opts) {
 
@@ -69,6 +69,10 @@
       }
       state = RUNNING;
       return next();
+    };
+
+    self.isRunning = function() {
+      return state === RUNNING;
     };
 
   };
