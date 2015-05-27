@@ -1,25 +1,28 @@
 'use strict';
 
-var segue = require('../');
+var segue = require('..');
 
-var cb = function(err) {
+var done = function(err) {
   if (err) {
     throw err;
   }
 };
 
-var queue = segue(cb);
+var queue = segue(done);
 
-var x = function(done, a) {
+var x = function(cb, a) {
   console.log(a); //=> 1
   setTimeout(function() {
-    done();
+    cb();
   }, 100);
 };
 
-var y = function(done, a, b) {
+var y = function(cb, a, b) {
   console.log(a, b); //=> 2, 3
-  done();
+  cb();
 };
 
-queue(x, 1)(y, 2, 3);
+queue.push(x, 1)
+     .push(y, 2, 3);
+
+queue.run();
