@@ -1,75 +1,83 @@
-(function(fn) {
-  /* istanbul ignore if  */
-  if (typeof module === 'undefined') {
-    this.segue = fn;
-  } else {
-    module.exports = fn;
-  }
-})(function(cb, opts) {
+(function(window) {
 
   'use strict';
 
-  var slice = [].slice;
+  var noop = function() {};
 
-  // both `cb` and `opts` are optional
-  if (typeof cb !== 'function') {
-    opts = cb;
-    cb = function() {};
+  var PAUSED = 0;
+  var RUNNING = 1;
+  var ERRORED = 2;
+
+  var Segue = function(cb, opts) {
+
+    var self = this;
+
+    if (!(self instanceof Segue)) {
+      return new Segue(cb, opts);
+    }
+
+    if (typeof cb !== 'function') {
+      opts = cb;
+      cb = noop;
+    }
+
+    var repeat = !!(opts && opts.repeat);
+
+    var queue = [];
+    var state = PAUSED;
+    var i = 0;
+
+    var next = function(err) {
+      if (err) {
+        state = ERRORED;
+        cb(err);
+        return self;
+      }
+      if (state !== RUNNING) {
+        return self;
+      }
+      if (i === queue.length) {
+        if (repeat) {
+          i = 0;
+        } else {
+          state = PAUSED;
+          return cb();
+        }
+      }
+      var nextFn = queue[i++];
+      nextFn[0].apply(self, [].concat(next.bind(self), nextFn[1]));
+      return self;
+    };
+
+    self.push = function() {
+      if (state !== ERRORED) {
+        var fn = arguments[0];
+        var args = [].slice.call(arguments, 1);
+        queue.push([fn, args]);
+      }
+      return self;
+    };
+
+    self.pause = function() {
+      state = PAUSED;
+      return self;
+    };
+
+    self.run = function() {
+      if (state === RUNNING) {
+        return self;
+      }
+      state = RUNNING;
+      return next();
+    };
+
+  };
+
+  /* istanbul ignore else */
+  if (typeof module === 'object') {
+    module.exports = Segue;
+  } else {
+    window.segue = Segue;
   }
 
-  // only repeat if `opts.repeat` is `true`
-  var repeat = opts && opts.repeat === true;
-
-  var fns = []; // store the enqueued functions
-  var args = []; // store the arguments for the enqueued functions
-  var i = 0; // index of the currently running function
-  var running = false; // true if a function running
-  var prevErr = false; // truthy if an error has occurred
-
-  var next = function(err) {
-
-    // cache the array length
-    var len = fns.length;
-
-    // wraparound if repeating
-    if (repeat) {
-      i = i % len;
-    }
-
-    // call the `cb` on error, or if there are no more functions to run
-    if (err || i === len) {
-      running = false;
-      prevErr = err;
-      return cb(err);
-    }
-
-    // call the current `fn`, passing it the arguments in `args`
-    fns[i].apply(null, [].concat(next, args[i++]));
-
-  };
-
-  return function segue(fn) {
-
-    // an error has already occurred; call the `cb` with the `prevErr`
-    if (prevErr) {
-      return cb(prevErr);
-    }
-
-    // store `fn` and its arguments
-    fns.push(fn);
-    args.push(slice.call(arguments, 1));
-
-    // call the next function in the queue if no functions are currently running
-    if (!running) {
-      running = true;
-      // call the next function only after all other functions have been enqueued
-      setTimeout(function() {
-        next();
-      }, 0);
-    }
-
-    return segue;
-
-  };
-
-});
+})(this);
