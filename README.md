@@ -4,100 +4,151 @@
 
 ## Features
 
-- Repeat the entire sequence of function calls indefinitely
-- Small as it gets; 0.49 KB [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 0.32 KB minified and gzipped
+- Enqueue functions to be called in series
+- Pause or resume the calling of functions in the queue
+- Option to repeat the entire sequence of function calls indefinitely
+- Small as it gets; 0.63 KB [minified](https://github.com/yuanqing/segue/blob/master/segue.min.js), or 0.38 KB minified and gzipped
 - Error handling
 
-Segue is particularly useful for when you have an indeterminate number of asynchronous functions that you want to call in series.
+This module is particularly useful for when we have an indeterminate number of asynchronous functions that we want to call in series.
 
 ## Quick start
 
-There is [a runnable example](https://github.com/yuanqing/segue/blob/master/example/index.js) you can play with:
+There is [a simple, runnable example](https://github.com/yuanqing/segue/blob/master/example/index.js) you can play with:
 
-```bash
+```
 $ git clone https://github.com/yuanqing/segue
-$ cd segue/example
-$ node index.js
+$ cd segue
+$ node example/index.js
 ```
 
 There are also [tests](https://github.com/yuanqing/segue/blob/master/test/index.js).
 
-## Usage
+## Example
 
-We first initialise a `queue` of functions by calling `segue`, passing in an error callback `cb`:
+We first initialise our `queue` of functions by calling `segue`, passing in a `done` callback:
 
 ```js
-var cb = function(err) {
+var segue = require('segue');
+
+var done = function(err) {
   if (err) {
     throw err;
   }
 };
 
-var queue = segue(cb);
+var queue = segue(done);
 ```
+
+`done` is called when all the functions in queue have run, or if an error had occurred in one of the function calls in the sequence.
 
 Suppose that we have two functions, `x` and `y`&hellip;
 
 ```js
-var x = function(done, a) {
+var x = function(cb, a) {
   console.log(a); //=> 1
   setTimeout(function() {
-    done();
+    cb();
   }, 100);
 };
 
-var y = function(done, a, b) {
+var y = function(cb, a, b) {
   console.log(a, b); //=> 2, 3
-  done();
+  cb();
 };
 ```
 
-&hellip;which we then add into the `queue`:
+&hellip;which we add into the `queue` via `push()`:
 
 ```js
-queue(x, 1)(y, 2, 3);
+queue.push(x, 1)
+     .push(y, 2, 3);
 ```
 
-Because `queue` is initially empty, `x` is called immediately with the argument `1`. After 100 milliseconds, `x` finishes execution, and `y` is called with the single argument `2` and `3`.
+We then kick off the sequence of function calls by calling `run()`:
 
-Every function in the `queue` takes a `done` callback as the first argument, and must call `done` to signal that it has finished execution. As is convention, `done` callback takes an `err` as its first argument. If `done` is called with a truthy `err`, the error callback (ie. `cb`) is called with the `err`, and no more functions in the queue are run.
+```js
+queue.run();
+```
+
+`x` will be called with the argument `1`. After 100 milliseconds, `x` finishes execution, and `y` is called with the single argument `2` and `3`.
+
+Note that every function takes a `cb` callback as the first argument, and must call `cb` to signal that it has finished execution. As is convention, `cb` takes an `err` as its first argument. If `cb` is called with a truthy `err`, the `done` callback is called with the `err`, and no more functions in the `queue` are run.
+
+### Pause, resume
+
+We can also pause or resume the calling of functions on-the-fly.
+
+To pause the calling of functions (say, when a button is clicked), call `pause()`:
+
+```js
+button.addEventListener('click', function() {
+  queue.pause();
+});
+```
+
+To resume the calling of functions, call `run()`:
+
+```js
+console.log(queue.isRunning()); //=> false
+queue.run();
+console.log(queue.isRunning()); //=> true
+```
+
+Here, we&rsquo;ve also used the `isRunning()` method, which tells us whether a function in the queue is currently running.
 
 ### Repeat
 
-To repeat the entire sequence of function calls indefinitely, simply pass in an `opts` with `opts.repeat` set to `true`:
+Finally, we note that it is possible to repeat the entire sequence of function calls indefinitely. Simply pass in `opts` with `opts.repeat` set to `true` when initialising the queue:
 
 ```js
-var queue = segue(cb, { repeat: true });
+var queue = segue(done, { repeat: true });
 ```
 
 ## API
 
+```js
+var segue = require('segue');
+```
+
 See [Usage](#usage).
 
-### segue([cb , opts])
+### var queue = segue([done, opts])
 
-Initialises the function queue.
+Initialises the function `queue`.
 
-- `cb` is the error callback that takes `err` as the first argument.
+- The `done` callback is called when all the functions in `queue` have run, or if an error had occurred in one of the function calls. Its signature is `(err)`.
 - Set `opts.repeat` to `true` to repeat the sequence of function calls indefinitely.
 
-### segue(fn [, arg1, arg2, &hellip;])
+### queue.push(fn [, arg1, arg2, &hellip;])
 
-Adds `fn` into the function queue. The `fn` will be called with a `done` callback, followed by the arguments specified here (`arg1`, `arg2`, and so on).
+Adds a function `fn` into the `queue`, and returns the `queue`. The `fn` will be called with a `done` callback, followed by the arguments specified here. In other words, its signature is `(cb, [, arg1, arg2, ...])`.
 
-`fn` must call `done` to signal that it has finished execution. If `done` is called with a truthy `err`, the error callback (ie. `cb`) will be called once with the `err`, and no more functions in the queue are run.
+`fn` must call `cb` to signal that it has finished execution. If `cb` is called with a truthy `err`, the `done` callback is called with the `err`, and no more functions in the `queue` are run.
+
+### queue.run()
+
+Starts the sequence of function calls, and returns the `queue`.
+
+### queue.pause()
+
+Pauses the sequence of function calls, and returns the `queue`.
+
+### queue.isRunning()
+
+Returns `true` if a function in the queue is running, else returns `false`.
 
 ## Installation
 
-Install via [npm](https://npmjs.com/):
+Install via [npm](https://npmjs.com):
 
-```bash
+```
 $ npm i --save segue
 ```
 
-Install via [bower](http://bower.io/):
+Install via [bower](http://bower.io):
 
-```bash
+```
 $ bower i --save yuanqing/segue
 ```
 
@@ -105,30 +156,13 @@ To use Segue in the browser, include [the minified script](https://github.com/yu
 
 ```html
 <body>
-  <!-- ... -->
   <script src="path/to/segue.min.js"></script>
   <script>
-    // segue available here
+    // `segue` available here
   </script>
 </body>
 ```
 
-## Changelog
-
-- 1.0.0
-  - Major rewrite/clean up, with a significant drop in file size
-  - Write tests using [tape](https://github.com/substack/tape)
-  - Remove ability to pass arguments between functions
-  - Remove pause/resume functionality
-  - Drop Gulp
-- 0.2.0
-  - Add pause/resume functionality
-  - Add repeat functionality
-  - Add a Browserified version of the module
-  - Use [Gulp](http://gulpjs.com/) as build system
-- 0.1.0
-  - Initial release
-
 ## License
 
-[MIT license](https://github.com/yuanqing/segue/blob/master/LICENSE)
+[MIT](https://github.com/yuanqing/segue/blob/master/LICENSE)
