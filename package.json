@@ -18,7 +18,7 @@
   "scripts": {
     "lint": "jshint --verbose segue.js test/*.js",
     "test": "rm -rf coverage && istanbul cover tape test/*.js",
-    "dist": "uglifyjs segue.js --mangle --output segue.min.js",
+    "dist": "uglifyjs segue.js --mangle --compress --output segue.min.js",
     "build": "npm run lint && npm test && npm run dist"
   },
   "keywords": [
