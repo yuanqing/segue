@@ -2,23 +2,24 @@
 
   'use strict';
 
-  var PAUSED = 0;
-  var RUNNING = 1;
-  var ERRORED = 2;
+  var PAUSED  = 0;
+  var PAUSING = 1;
+  var RUNNING = 2;
+  var ERRORED = 3;
 
   var noop = function() {};
 
-  var Segue = function(cb, opts) {
+  var Segue = function(doneCb, opts) {
 
     var self = this;
 
     if (!(self instanceof Segue)) {
-      return new Segue(cb, opts);
+      return new Segue(doneCb, opts);
     }
 
-    if (typeof cb !== 'function') {
-      opts = cb;
-      cb = noop;
+    if (typeof doneCb !== 'function') {
+      opts = doneCb;
+      doneCb = noop;
     }
 
     var repeat = !!(opts && opts.repeat);
@@ -27,13 +28,18 @@
     var state = PAUSED;
     var i = 0;
 
+    var pauseCb = noop;
+
     var next = function(err) {
       if (err) {
         state = ERRORED;
-        cb(err);
+        doneCb(err);
         return self;
       }
       if (state !== RUNNING) {
+        state = PAUSED;
+        pauseCb();
+        pauseCb = noop;
         return self;
       }
       if (i === queue.length) {
@@ -41,7 +47,7 @@
           i = 0;
         } else {
           state = PAUSED;
-          return cb();
+          return doneCb();
         }
       }
       var nextFn = queue[i++];
@@ -58,8 +64,11 @@
       return self;
     };
 
-    self.pause = function() {
-      state = PAUSED;
+    self.pause = function(cb) {
+      if (state === RUNNING) {
+        state = PAUSING;
+        pauseCb = cb || noop;
+      }
       return self;
     };
 
@@ -72,7 +81,7 @@
     };
 
     self.isRunning = function() {
-      return state === RUNNING;
+      return state === RUNNING || state === PAUSING;
     };
 
   };
